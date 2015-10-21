@@ -65,6 +65,8 @@ void Analysis(std::vector<std::string> &files, ParamList &params,
     
     // Process files
     for (unsigned int i = 0; i < files.size(); ++i) {
+      printf("starting...\n");
+      
         r.points = PointSet::Load(files[i]);
         
         const int npoints = r.points.size();
@@ -77,9 +79,18 @@ void Analysis(std::vector<std::string> &files, ParamList &params,
         
         // Fourier transform if necessary
         if (ft) {
+            printf("need fft.\n");
+            
             Spectrum s(ftsize * 2);
+            
+            printf("make pss.\n");
+            
             Spectrum::PointSetSpectrum(&s, r.points, npoints);
+            
+            printf("fft...\n");
             p = Periodogram(s);
+            
+            printf("divide fft...\n");
             p.Divide(npoints);
         }
         
@@ -91,6 +102,8 @@ void Analysis(std::vector<std::string> &files, ParamList &params,
         if (params.GetBool("rp") || summary) {
             int nbins = ftsize * config.fbinsize;
             r.rp = Curve(nbins, 0, ftsize);
+            
+            printf("radial power...\n");
             p.RadialPower(&r.rp);
         }
         if (params.GetBool("rdf") || summary) {
@@ -98,24 +111,34 @@ void Analysis(std::vector<std::string> &files, ParamList &params,
             int nbins = config.rbinsize * npoints;
             r.rdf = Curve(nbins, 0, maxdist);
             r.points.RDF(&r.rdf);
+            
+            printf("rdf...\n");
         }
         if (params.GetBool("ani") || summary) {
             int nbins = ftsize * config.fbinsize;
             r.ani = Curve(nbins, 0, ftsize);
             p.Anisotropy(&r.ani);
+            
+            printf("anisotropy...\n");
         }
         if (params.GetBool("pspectrum") || summary) {
             r.spectrum = Image(ftsize * 2, ftsize * 2);
             p.ToImage(&r.spectrum);
             r.spectrum.ToneMap(true);
+            
+            printf("2d power spectrum...\n");
         }
 
         // Output
         std::string base = BaseName(files[i], true);
-        if (summary)
+        if (0&&summary) {
+            printf("writing summary (hope you built with cairo!)...\n");
             SaveSummary(base+".pdf", r, config);
-        else
+        }
+        else {
+            printf("writing output image...\n");
             WriteResult(base, r, config, params);
+        }
     }
 }
 
@@ -201,11 +224,15 @@ void AnalysisAverage(std::vector<std::string> &files, ParamList &params,
         r.spectrum.ToneMap(true);
     }
 
+    
     // Output
     std::string base = "avg";
-    if (summary)
+    if (summary) {
+        printf("write summary (better have cairo installed)...\n");
         SaveSummary(base+".pdf", r, config);
-    else
+    } else {
+        printf("write power spectrum image...\n");
         WriteResult(base, r, config, params);
+    }
 }
 

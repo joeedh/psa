@@ -1,11 +1,11 @@
 ###################### user-configuration section #######################
-INC := -I/usr/local/include
-LIB := -L/usr/local/lib
-MARCH := -m64
+INC := $(INCLUDE)
+LIB := $(LIB)
+MARCH := 
 
 # set HAVE_CGAL to 0 to build without CGAL support; psa will then omit
 # the computation of the bond-orientational order (BOO)
-HAVE_CGAL := 1
+HAVE_CGAL := 0
 #########################################################################
 
 CXX := g++
@@ -26,7 +26,7 @@ CXXFILES := main.cpp analysis.cpp config.cpp curve.cpp delaunay.cpp image.cpp pa
 OBJS   := $(patsubst %.cpp,$(OBJDIR)/%.cpp.o,$(notdir $(CXXFILES)))
 TARGET := psa
 
-VERBOSE := @
+VERBOSE := 
 
 .PHONY: all clean
 

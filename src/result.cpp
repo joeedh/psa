@@ -24,11 +24,12 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-#include <cairo/cairo-pdf.h>
+//#include <cairo/cairo-pdf.h>
 
 
 void SaveSummary(const std::string &fname, Result &result, Config &config)
 {
+#if 0
     const float fnorm = 2.f / sqrtf(result.npoints);
     const float rnorm = 1.f / sqrtf(2.f / (SQRT3 * result.npoints));
     
@@ -201,6 +202,7 @@ void SaveSummary(const std::string &fname, Result &result, Config &config)
     if (imgdata) delete[] imgdata;
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
+#endif
 }
 
 void WriteResult(const std::string &base, Result &result, Config &config,

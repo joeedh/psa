@@ -22,7 +22,8 @@
 #include "image.h"
 #include "util.h"
 #include <cassert>
-#include <cairo/cairo.h>
+#include "png.h"
+//#include <cairo/cairo.h>
 
 void Image::reallocate(int w, int h)
 {
@@ -101,10 +102,22 @@ void Image::ToneMap(bool square_root, float scale)
     }
 }
 
+int save_png_image(const char *fname, unsigned char *data, int width, int height);
+
 void Image::Save(const std::string &fname, bool flipped)
 {
     unsigned char *data = NULL;
     this->GetRGBA(data, flipped);
+    
+    save_png_image(fname.c_str(), data, width, height);
+    delete[] data;
+    
+//int save_png_image(const char *fname, unsigned char *data, int width, int height) {
+  
+#if 0
+    unsigned char *data = NULL;
+    this->GetRGBA(data, flipped);
+    
     int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, width);
     cairo_surface_t *surface =
         cairo_image_surface_create_for_data(data, CAIRO_FORMAT_RGB24,
@@ -112,5 +125,35 @@ void Image::Save(const std::string &fname, bool flipped)
     cairo_surface_write_to_png(surface, fname.c_str());
     cairo_surface_destroy(surface);
     delete[] data;
+#endif
+}
+
+int save_png_image(const char *fname, unsigned char *data, int width, int height) {
+    png_image image;
+    printf("writing...\n");
+    
+    /* Only the image structure version number needs to be set. */
+    memset(&image, 0, sizeof image);
+    
+    image.version = PNG_IMAGE_VERSION;
+    image.width = width;
+    image.height = height;
+    image.format = PNG_FORMAT_RGBA;
+    
+    //image.flags = PNG_IMAGE_FLAG_COLORSPACE_NOT_sRGB;
+    
+   if (!png_image_write_to_file(&image, fname, 0, (const void*)data, 0, NULL)) {
+     fprintf(stderr, "pngtopng: read %s: %s\n", image.message);
+
+     /* This is the only place where a 'free' is required; libpng does
+      * the cleanup on error and success, but in this case we couldn't
+      * complete the read because of running out of memory.
+      */
+     png_image_free(&image);
+     
+     return 0;
+   }
+   
+   return 1;
 }
 
